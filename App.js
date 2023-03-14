@@ -1,15 +1,22 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View, FlatList, Image } from "react-native";
+import { StyleSheet, Text, View, FlatList, Image, Button } from "react-native";
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [foodItem, setFoodItem] = useState([]);
+  const [filteredFoodItem, setFilteredFoodItem] = useState([]);
 
   useEffect(() => {
-    fetch("http://192.168.0.113:8080/foodData")
+    //serve ./ngrok.exe http 8080 in cmd to access the below url
+    fetch("https://7202-45-112-68-52.in.ngrok.io/foodData")
       .then((response) => response.json())
-      .then((json) => setFoodItem(json))
-      .catch((err) => console.log("fetch error:", err))
+      .then((json) => {
+        setFoodItem(json);
+        setFilteredFoodItem(json);
+      })
+      .catch((err) => {
+        console.log("fetch error:", err)
+      })
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -26,8 +33,17 @@ export default function App() {
             justifyContent: "space-between",
           }}
         >
+          <Button title="All" onPress={() => {
+            setFilteredFoodItem([...foodItem])
+          }} />
+          <Button title="Fat Free" onPress={() => {
+            setFilteredFoodItem([...foodItem.filter((foodItem) => foodItem.category === "Fat Free")])
+          }} />
+          <Button title="Vegan" onPress={() => {
+            setFilteredFoodItem([...foodItem.filter((foodItem) => foodItem.category === "Vegan")])
+          }} />
           <FlatList
-            data={foodItem}
+            data={filteredFoodItem}
             keyExtractor={({ id }, index) => id}
             renderItem={({ item }) => (
               <View style={styles.liststyle}>
@@ -40,6 +56,7 @@ export default function App() {
                   }}
                 />
                 <Text>{item.title}</Text>
+                <Text>{item.category}</Text>
               </View>
             )}
           />
